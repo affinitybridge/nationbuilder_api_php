@@ -1,0 +1,18 @@
+{
+    "name": "affinitybridge/nationbuilder-api",
+    "description": "Light PHP wrapper for the NationBuilder API v1",
+    "license": "LGPL-3.0+", 
+    "authors": [
+        {
+            "name": "Raphael Huefner",
+            "email": "raphael@affinitybridge.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "justinrainbow/json-schema": "1.4.1"
+    },
+    "autoload": {
+        "psr-4": {"Affinitybridge\\NationBuilder\\": "src/"}
+    }
+}
