@@ -3,7 +3,7 @@
 namespace Affinitybridge\NationBuilder\Endpoint;
 
 use Affinitybridge\NationBuilder\Container as Container;
-use Affinitybridge\NationBuilder\ConnectionInterface as ConnectionInterface;
+use Affinitybridge\NationBuilder\Connection\ConnectionInterface as ConnectionInterface;
 use Affinitybridge\NationBuilder\Validator as Validator;
 
 abstract class EndpointAbstract {
