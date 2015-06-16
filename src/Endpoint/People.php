@@ -304,7 +304,7 @@ class People extends EndpointAbstract {
   }
 
   public function search(array $params) {
-    return $this->apiGet('people/match', [
+    return $this->apiGet('people/search', [
       '/first_name' => [Validator::STRING, ''],
       '/last_name' => [Validator::STRING, ''],
       '/city' => [Validator::STRING, ''],
