@@ -368,6 +368,10 @@ class People extends EndpointAbstract {
     return $this->apiGet('people/' . (int) $id . '/taggings');
   }
 
+  public function addTags($id, array $tags) {
+    return $this->apiPut('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
+  }
+
   public function create($person) {
     $person = Validator::normalize($person, array_merge(static::getPersonFields(), $this->getCustomFields()));
     $person = Validator::inlineJsonPointer($person);
