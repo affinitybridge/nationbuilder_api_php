@@ -29,6 +29,7 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
 
     protected $credentials = [];
     protected $people = null;
+    protected $tags = null;
 
     protected function setUp()
     {
@@ -56,9 +57,41 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
         $api = new Api(['environment' => $env]);
         $connection = $api->connect('dummyConnectionId');
         $this->people = $connection->people();
+        $this->tags = $connection->tags();
     }
 
-    protected function clearTestData()
+    public static function tearDownAfterClass()
+    {
+        $that = new self();
+        $that->loadCredentials();
+        $that->buildSystem();
+        $that->clearTestDataByTag();
+    }
+
+    protected function clearTestDataByTag()
+    {
+        try {
+            $result = $this->tags->people(static::TEST_TAG);
+        }
+        catch (\Exception $e) {
+            // Do nothing if we failed to find people with this tag.
+        }
+
+        if (isset($result['results'])) {
+            foreach ($result['results'] as $person) {
+                if (isset($person['id'])) {
+                    try {
+                        $deleteResult = $this->people->delete($person['id']);
+                    }
+                    catch (\Exception $e) {
+                        // Do nothing if deletion failed.
+                    }
+                }
+            }
+        }
+    }
+
+    protected function clearTestDataByEmailMatch()
     {
         try {
             $matchResult = $this->people->match(['email' => static::PERSON_A['email']]);
@@ -85,7 +118,7 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
-        $this->clearTestData();
+        $this->clearTestDataByEmailMatch();
 
         $result = $this->people->create(static::PERSON_A);
 
@@ -314,5 +347,51 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
 
         $this->assertArrayHasKey('occupation', $result['person']);
         $this->assertEquals($updateData['occupation'], $result['person']['occupation']);
+    }
+
+    /**
+     * @depends testCreate
+     */
+    public function testTagIndex($createdId)
+    {
+        $result = $this->tags->index();
+
+        $this->assertArrayHasKey('results', $result);
+        $this->assertArrayHasKey('next', $result);
+        $this->assertArrayHasKey('prev', $result);
+        $this->assertInternalType('array', $result['results']);
+
+        $found = false;
+        foreach ($result['results'] as $tag) {
+            $this->assertInternalType('array', $tag);
+            $this->assertArrayHasKey('name', $tag);
+            if (static::TEST_TAG == $tag['name']) {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    /**
+     * @depends testCreate
+     */
+    public function testTagPeople($createdId)
+    {
+        $result = $this->tags->people(static::TEST_TAG);
+
+        $this->assertArrayHasKey('results', $result);
+        $this->assertArrayHasKey('next', $result);
+        $this->assertArrayHasKey('prev', $result);
+        $this->assertInternalType('array', $result['results']);
+
+        $found = false;
+        foreach ($result['results'] as $person) {
+            $this->assertInternalType('array', $person);
+            $this->assertArrayHasKey('id', $person);
+            if ($createdId == $person['id']) {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
     }
 }

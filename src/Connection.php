@@ -23,4 +23,8 @@ class Connection implements ConnectionInterface {
     public function people() {
         return $this->container->endpoint_people($this);
     }
+
+    public function tags() {
+        return $this->container->endpoint_tags($this);
+    }
 }

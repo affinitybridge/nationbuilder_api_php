@@ -1,2 +1,3 @@
 /vendor
-/.test_credentials.json
+/.test_credentials*.json
+!/.test_credentials.example.json

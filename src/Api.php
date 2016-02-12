@@ -13,6 +13,7 @@ class Api
             'connection' => 'Affinitybridge\\NationBuilder\\Connection',
             // 'validator' => 'Affinitybridge\\NationBuilder\\Validator',
             'endpoint_people' => 'Affinitybridge\\NationBuilder\\Endpoint\\People',
+            'endpoint_tags' => 'Affinitybridge\\NationBuilder\\Endpoint\\Tags',
             'http_request' => 'Affinitybridge\\NationBuilder\\Http\\Request',
             'http_response' => 'Affinitybridge\\NationBuilder\\Http\\Response',
             'http_uri' => 'Affinitybridge\\NationBuilder\\Http\\Uri',
