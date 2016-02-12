@@ -23,6 +23,12 @@ class Dummy implements EnvironmentInterface {
 
     public function httpCall($method, $url, array $data = null)
     {
-        return [];
+        return [
+            'statusCode' => 500,
+            'reasonPhrase' => 'No transport implemented.',
+            'protocolVersion' => '1.0',
+            'headers' => [],
+            'body' => [],
+        ];
     }
 }

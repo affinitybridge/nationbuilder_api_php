@@ -21,7 +21,13 @@ abstract class EndpointAbstract {
         $queryParameters = Validator::normalize($queryParameters, $allowedQueryParameters);
         $queryParameters = Validator::inlineJsonPointer($queryParameters);
         $url = $this->connection->makeApiUrl($urlPath, $queryParameters);
-        return $this->container->environment->httpCall('GET', $url);
+        $response = $this->container->environment->httpCall('GET', $url);
+        if ($response['statusCode'] < 400) {
+            return $response['body'];
+        }
+        else {
+            throw new \Exception('Error calling GET ' . $urlPath);
+        }
     }
 
     protected function apiPut($urlPath, array $allowedBodyParameters = [], array $bodyParameters = [], array $allowedQueryParameters = [], array $queryParameters = []) {
@@ -32,7 +38,13 @@ abstract class EndpointAbstract {
         $queryParameters = Validator::inlineJsonPointer($queryParameters);
 
         $url = $this->connection->makeApiUrl($urlPath, $queryParameters);
-        return $this->container->environment->httpCall('PUT', $url, $bodyParameters);
+        $response = $this->container->environment->httpCall('PUT', $url, $bodyParameters);
+        if ($response['statusCode'] < 400) {
+            return $response['body'];
+        }
+        else {
+            throw new \Exception('Error calling PUT ' . $urlPath);
+        }
     }
 
     protected function apiPost($urlPath, array $allowedBodyParameters = [], array $bodyParameters = [], array $allowedQueryParameters = [], array $queryParameters = []) {
@@ -43,6 +55,29 @@ abstract class EndpointAbstract {
         $queryParameters = Validator::inlineJsonPointer($queryParameters);
 
         $url = $this->connection->makeApiUrl($urlPath, $queryParameters);
-        return $this->container->environment->httpCall('POST', $url, $bodyParameters);
+        $response = $this->container->environment->httpCall('POST', $url, $bodyParameters);
+        if ($response['statusCode'] < 400) {
+            return $response['body'];
+        }
+        else {
+            throw new \Exception('Error calling POST ' . $urlPath);
+        }
+    }
+
+    protected function apiDelete($urlPath, array $allowedBodyParameters = [], array $bodyParameters = [], array $allowedQueryParameters = [], array $queryParameters = []) {
+        $bodyParameters = Validator::normalize($bodyParameters, $allowedBodyParameters);
+        $bodyParameters = Validator::inlineJsonPointer($bodyParameters);
+
+        $queryParameters = Validator::normalize($queryParameters, $allowedQueryParameters);
+        $queryParameters = Validator::inlineJsonPointer($queryParameters);
+
+        $url = $this->connection->makeApiUrl($urlPath, $queryParameters);
+        $response = $this->container->environment->httpCall('DELETE', $url, $bodyParameters);
+        if ($response['statusCode'] < 400) {
+            return $response['body'];
+        }
+        else {
+            throw new \Exception('Error calling DELETE ' . $urlPath);
+        }
     }
 }

@@ -10,7 +10,7 @@ class Callback implements EnvironmentInterface {
 
     public function __construct(Container $container)
     {
-        $this->container = $container;
+        $this->setContainer($container);
     }
 
     public function setContainer(Container $container)
@@ -18,16 +18,19 @@ class Callback implements EnvironmentInterface {
         $this->container = $container;
     }
 
+    public function setCallback($key, $callback)
+    {
+        if (is_callable($callback)) {
+            $this->callbacks[$key] = $callback;
+        } else {
+            throw new \Exception("Error: The callback given for '$key' is not really callable.");
+        }
+    }
+
     public function setCallbacks(array $callbacks)
     {
-        if (
-            is_callable($callbacks['credentialsLoad'])
-            &&
-            is_callable($callbacks['httpCall'])
-        ) {
-            $this->callbacks = $callbacks;
-        } else {
-            throw new \Exception("Error: One or more given callbacks are not really callable.");
+        foreach ($callbacks as $key => $callback) {
+            $this->setCallback($key, $callback);
         }
     }
 
@@ -38,13 +41,24 @@ class Callback implements EnvironmentInterface {
 
     public function httpCall($method, $url, array $body = null)
     {
-        $headers = ['Accept' => 'application/json'];
+        $headers = ['Accept' => ['application/json']];
         if (! is_null($body)) {
             $body = json_encode($body);
-            $headers['Content-Type'] = 'application/json';
+            $headers['Content-Type'] = ['application/json'];
         }
-        $result = $this->callbacks['httpCall']($method, $url, $headers, $body);
-         // TODO Also relay HTTP result code and maybe result headers.
-        return json_decode($result['body'], true);
+        $uri = $this->container->http_uri($url);
+        $request = $this->container->http_request($method, $uri, $headers, $body);
+        $container_in_closure = $this->container;
+        $response = $this->callbacks['httpCall']($request, function ($statusCode, $reasonPhrase, $protocolVersion, $headers, $body) use ($container_in_closure) {
+            return $container_in_closure->http_response($statusCode, $reasonPhrase, $protocolVersion, $headers, $body);
+        });
+
+        return [
+            'statusCode' => $response->getStatusCode(),
+            'reasonPhrase' => $response->getReasonPhrase(),
+            'protocolVersion' => $response->getProtocolVersion(),
+            'headers' => $response->getHeaders(),
+            'body' => json_decode($response->getBody(), true),
+        ];
     }
 }

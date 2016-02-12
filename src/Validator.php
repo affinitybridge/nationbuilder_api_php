@@ -80,9 +80,10 @@ class Validator {
       case static::ISO_TIMESTAMP:
         return 1 === preg_match('{^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$}', $data);
       case static::URL:
-        return valid_url($data, TRUE); // TODO remove dependency o Drupal.
+        $parsed = parse_url($data);
+        return is_array($parsed) && (0 < count(array_intersect(array_keys($parsed), ['scheme', 'host', 'port', 'user', 'pass', 'path', 'query', 'fragment'])));
       case static::EMAIL:
-        return valid_email_address($data, TRUE); // TODO remove dependency o Drupal.
+        return (bool) filter_var($data, FILTER_VALIDATE_EMAIL);
       case static::PHONE:
         $only_digits = preg_replace('{\D}', '', $data);
         return 5 < strlen($only_digits);

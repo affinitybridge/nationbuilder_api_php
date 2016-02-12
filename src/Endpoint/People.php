@@ -293,7 +293,12 @@ class People extends EndpointAbstract {
 
   public function index($pageLimit = 10) {
     $data = $this->apiGet('people', ['/limit' => [Validator::INT, 'maximum number of results to return']], ['limit' => $pageLimit]);
-    return is_array($data['results']) ? $data['results'] : [];
+    if (isset($data['results']) && is_array($data['results'])) {
+        return $data['results'];
+    }
+    else {
+        throw new \Exception('No results returned.');
+    }
   }
 
   public function show($id) {
@@ -373,6 +378,14 @@ class People extends EndpointAbstract {
     return $this->apiPut('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
   }
 
+  public function deleteTag($id, $tag) {
+    return $this->apiDelete('people/' . (int) $id . '/taggings/' . (string) $tag);
+  }
+
+  public function deleteTags($id, array $tags) {
+    return $this->apiDelete('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
+  }
+
   public function create($person) {
     $person = Validator::normalize($person, array_merge(static::getPersonFields(), $this->getCustomFields()));
     $person = Validator::inlineJsonPointer($person);
@@ -383,6 +396,14 @@ class People extends EndpointAbstract {
     $person = Validator::normalize($person, array_merge(static::getPersonFields(), $this->getCustomFields()));
     $person = Validator::inlineJsonPointer($person);
     return $this->apiPut('people/' . (int) $id, ['/person' => [Validator::ABBR_PERSON, '']], ['person' => $person]);
+  }
+
+  public function delete($id) {
+    return $this->apiDelete('people/' . (int) $id);
+  }
+
+  public function destroy($id) {
+    return $this->delete($id);
   }
 
   public function getCustomFields() {

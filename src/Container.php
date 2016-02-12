@@ -21,6 +21,9 @@ class Container
         if ($definition instanceof \Closure) {
             $definition = $definition->bindTo($this, get_class($this));
         }
+        if (is_object($definition) && method_exists($definition, 'setContainer')) {
+            $definition->setContainer($this);
+        }
         $this->definitions[$name] = $definition;
     }
 
@@ -37,9 +40,6 @@ class Container
         } else if (is_callable($definition)) {
             return call_user_func_array($definition, [$this]);
         } else if (is_object($definition)) {
-            if (method_exists($definition, 'setContainer')) {
-                $definition->setContainer($this);
-            }
             return $definition;
         }
     }
@@ -59,7 +59,7 @@ class Container
             return call_user_func_array($definition, $arguments);
         } else if (is_string($definition) && class_exists($definition)) {
             if (0 < count($arguments)) {
-                if ($this != $arguments[0]) {
+                if ($this !== $arguments[0]) {
                     array_unshift($arguments, $this);
                 }
                 $refl = new \ReflectionClass($definition);

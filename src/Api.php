@@ -13,6 +13,9 @@ class Api
             'connection' => 'Affinitybridge\\NationBuilder\\Connection',
             // 'validator' => 'Affinitybridge\\NationBuilder\\Validator',
             'endpoint_people' => 'Affinitybridge\\NationBuilder\\Endpoint\\People',
+            'http_request' => 'Affinitybridge\\NationBuilder\\Http\\Request',
+            'http_response' => 'Affinitybridge\\NationBuilder\\Http\\Response',
+            'http_uri' => 'Affinitybridge\\NationBuilder\\Http\\Uri',
         ];
         $this->container = new Container(array_merge($injectionDefaults, $injectionOverrides));
     }
