@@ -40,8 +40,12 @@ class ConnectTest extends \PHPUnit_Framework_TestCase
 
         $result = $people->index();
 
-        $this->assertInternalType('array', $result, 'Retrieving the index of people should result in an array.');
-        foreach ($result as $abbrPerson) {
+        $this->assertArrayHasKey('results', $result);
+        $this->assertArrayHasKey('next', $result);
+        $this->assertArrayHasKey('prev', $result);
+
+        $this->assertInternalType('array', $result['results'], 'Retrieving the index of people should result in an array.');
+        foreach ($result['results'] as $abbrPerson) {
             $this->assertArrayHasKey('id', $abbrPerson);
             $this->assertInternalType('integer', $abbrPerson['id']);
         }

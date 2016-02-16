@@ -291,35 +291,96 @@ class People extends EndpointAbstract {
     return $prefixedAbbrPersonFields;
   }
 
-  public function index($pageLimit = 10) {
-    $data = $this->apiGet('people', ['/limit' => [Validator::INT, 'maximum number of results to return']], ['limit' => $pageLimit]);
-    if (isset($data['results']) && is_array($data['results'])) {
-        return $data['results'];
+  public function count() {
+    $response = $this->apiGet('people/count');
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['people_count'])
+        &&
+        is_numeric($response['body']['people_count'])
+    ) {
+        return $response['body']['people_count'];
     }
     else {
-        throw new \Exception('No results returned.');
+        throw new \Exception('NationBuilder API did not return results for /people/count: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
+  }
+
+  public function index($pageLimit = 10) {
+    $response = $this->apiGet('people', ['/limit' => [Validator::INT, 'maximum number of results to return']], ['limit' => $pageLimit]);
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['results'])
+        &&
+        is_array($response['body']['results'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
     }
   }
 
   public function show($id) {
-    return $this->apiGet('people/' . (int) $id);
+    $response = $this->apiGet('people/' . (int) $id);
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['person'])
+        &&
+        is_array($response['body']['person'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/' . $id . ': ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function match(array $params) {
     if (isset($params['/phone'])) {
       $params['/phone'] = preg_replace('{\D}', '', $params['/phone']); // Remove all non-digits, only then it matches.
     }
-    return $this->apiGet('people/match', [
+    $response = $this->apiGet('people/match', [
       '/email' => [Validator::STRING, ''],
       '/first_name' => [Validator::STRING, ''],
       '/last_name' => [Validator::STRING, ''],
       '/phone' => [Validator::STRING, ''],
       '/mobile' => [Validator::STRING, ''],
     ], $params);
+
+    if (
+        (400 == $response['statusCode'])
+        &&
+        (
+            isset($response['body']['code'], $response['body']['message'])
+            &&
+            ('no_matches' == $response['body']['code'])
+            // &&
+            // ('No people matched the given criteria.' == $response['body']['message'])
+        )
+    ) {
+        return [];
+    }
+
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['person'])
+        &&
+        is_array($response['body']['person'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/match: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function search(array $params) {
-    return $this->apiGet('people/search', [
+    $response = $this->apiGet('people/search', [
       '/first_name' => [Validator::STRING, ''],
       '/last_name' => [Validator::STRING, ''],
       '/city' => [Validator::STRING, ''],
@@ -347,59 +408,185 @@ class People extends EndpointAbstract {
       '/__nonce' => [Validator::STRING, 'pagination nonce'],
       '/limit' => [Validator::INT, 'maximum number of results to return'],
     ], $params);
+
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['results'])
+        &&
+        is_array($response['body']['results'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/search: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function nearby(array $params) {
     if (isset($params['latitude'], $params['longitude'])) {
       $params['location'] = $params['latitude'] . ',' . $params['longitude'];
     }
-    return $this->apiGet('people/nearby', [
+    $response = $this->apiGet('people/nearby', [
       '/location' => [Validator::STRING, 'origin of search in the format "latitude,longitude"'],
       '/distance' => [Validator::INT, 'radius in miles for which to include results'],
       '/__token' => [Validator::STRING, 'pagination token'],
       '/__nonce' => [Validator::STRING, 'pagination nonce'],
       '/limit' => [Validator::INT, 'maximum number of results to return'],
     ], $params);
+
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['results'])
+        &&
+        is_array($response['body']['results'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/nearby: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function me() {
-    return $this->apiGet('people/me');
+    $response = $this->apiGet('people/me');
+
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['person'])
+        &&
+        is_array($response['body']['person'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/me: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function register($id) {
-    return $this->apiGet('people/' . (int) $id . '/register');
+    $response = $this->apiGet('people/' . (int) $id . '/register');
+
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['status'])
+        &&
+        is_string($response['body']['status'])
+    ) {
+        return 'success' == $response['body']['status'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/' . (int) $id . '/register: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function taggings($id) {
-    return $this->apiGet('people/' . (int) $id . '/taggings');
+    $response = $this->apiGet('people/' . (int) $id . '/taggings');
+
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['taggings'])
+        &&
+        is_array($response['body']['taggings'])
+    ) {
+        return $response['body']['taggings'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for /people/' . (int) $id . '/taggings: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function addTags($id, array $tags) {
-    return $this->apiPut('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
+    $response = $this->apiPut('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
+
+    $this->throwIfError($response);
+
+    if (
+        isset($response['body']['taggings'])
+        &&
+        is_array($response['body']['taggings'])
+    ) {
+        return $response['body']['taggings'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for PUT /people/' . (int) $id . '/taggings: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function deleteTag($id, $tag) {
-    return $this->apiDelete('people/' . (int) $id . '/taggings/' . (string) $tag);
+    $response = $this->apiDelete('people/' . (int) $id . '/taggings/' . (string) $tag);
+    if (204 == $response['statusCode']) {
+        return true;
+    }
+
+    $this->throwIfError($response);
+    return false;
   }
 
   public function deleteTags($id, array $tags) {
-    return $this->apiDelete('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
+    $response = $this->apiDelete('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
+    if (204 == $response['statusCode']) {
+        return true;
+    }
+
+    $this->throwIfError($response);
+    return false;
   }
 
   public function create($person) {
     $person = Validator::normalize($person, array_merge(static::getPersonFields(), $this->getCustomFields()));
     $person = Validator::inlineJsonPointer($person);
-    return $this->apiPost('people', ['/person' => [Validator::ABBR_PERSON, '']], ['person' => $person]);
+    $response = $this->apiPost('people', ['/person' => [Validator::ABBR_PERSON, '']], ['person' => $person]);
+
+    if (409 == $response['statusCode']) {
+        // TODO Handle duplication conflict.
+    }
+
+    $this->throwIfError($response);
+    if (
+        (201 == $response['statusCode'])
+        &&
+        isset($response['body']['person'])
+        &&
+        is_array($response['body']['person'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for POST /people: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function update($id, $person) {
     $person = Validator::normalize($person, array_merge(static::getPersonFields(), $this->getCustomFields()));
     $person = Validator::inlineJsonPointer($person);
-    return $this->apiPut('people/' . (int) $id, ['/person' => [Validator::ABBR_PERSON, '']], ['person' => $person]);
+    $response = $this->apiPut('people/' . (int) $id, ['/person' => [Validator::ABBR_PERSON, '']], ['person' => $person]);
+
+    $this->throwIfError($response);
+    if (
+        isset($response['body']['person'])
+        &&
+        is_array($response['body']['person'])
+    ) {
+        return $response['body'];
+    }
+    else {
+        throw new \Exception('NationBuilder API did not return results for POST /people' . (int) $id . ': ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
+    }
   }
 
   public function delete($id) {
     return $this->apiDelete('people/' . (int) $id);
+    if (204 == $response['statusCode']) {
+        return true;
+    }
+
+    $this->throwIfError($response);
+    return false;
   }
 
   public function destroy($id) {

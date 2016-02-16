@@ -116,6 +116,13 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('access_token', $this->credentials);
     }
 
+    public function testCount()
+    {
+        $result = $this->people->count();
+
+        $this->assertTrue(is_numeric($result), 'Retrieving the count of people should result in a number.');
+    }
+
     public function testCreate()
     {
         $this->clearTestDataByEmailMatch();
@@ -138,8 +145,12 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
     {
         $result = $this->people->index();
 
-        $this->assertInternalType('array', $result, 'Retrieving the index of people should result in an array.');
-        foreach ($result as $abbrPerson) {
+        $this->assertArrayHasKey('results', $result);
+        $this->assertArrayHasKey('next', $result);
+        $this->assertArrayHasKey('prev', $result);
+
+        $this->assertInternalType('array', $result['results'], 'Retrieving the index of people should result in an array.');
+        foreach ($result['results'] as $abbrPerson) {
             $this->assertArrayHasKey('id', $abbrPerson);
             $this->assertInternalType('integer', $abbrPerson['id']);
             $existingIds[] = $abbrPerson['id'];
@@ -233,9 +244,8 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
     {
         $result = $this->people->register($createdId);
 
-        $this->assertInternalType('array', $result);
-        $this->assertArrayHasKey('status', $result);
-        $this->assertEquals('success', $result['status']);
+        $this->assertInternalType('boolean', $result);
+        $this->assertTrue($result);
     }
 
     /**
@@ -257,11 +267,9 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
         $result = $this->people->taggings($personId);
 
         $this->assertInternalType('array', $result);
-        $this->assertArrayHasKey('taggings', $result);
-        $this->assertInternalType('array', $result['taggings']);
 
         $found = [];
-        foreach ($result['taggings'] as $tagging) {
+        foreach ($result as $tagging) {
             $this->assertInternalType('array', $tagging);
             $this->assertArrayHasKey('person_id', $tagging);
             $this->assertEquals($personId, $tagging['person_id']);
