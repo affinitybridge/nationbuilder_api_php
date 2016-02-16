@@ -61,7 +61,7 @@ abstract class EndpointAbstract {
             (
                 isset($response['body']['code'], $response['body']['message'])
                 &&
-                (1 === preg_match('{error|not_found|bad_request}i', $response['body']['code']))
+                (1 === preg_match('{error|not_found|bad_request|not_acceptable}i', $response['body']['code']))
             )
         ) {
             // examples:
@@ -92,8 +92,14 @@ abstract class EndpointAbstract {
             //
             // 404
             // {
-            //    "code": "not_found",
-            //    "message": "Record not found"
+            //     "code": "not_found",
+            //     "message": "Record not found"
+            // }
+            //
+            // 406
+            // {
+            //     "code": "not_acceptable",
+            //     "message": "I can only talk JSON. Please set 'Accept' and 'Content-Type' to 'application/json' in your http request header."
             // }
             //
             // 500

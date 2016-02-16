@@ -153,7 +153,6 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
         foreach ($result['results'] as $abbrPerson) {
             $this->assertArrayHasKey('id', $abbrPerson);
             $this->assertInternalType('integer', $abbrPerson['id']);
-            $existingIds[] = $abbrPerson['id'];
         }
     }
 
