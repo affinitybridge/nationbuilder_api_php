@@ -596,8 +596,8 @@ class People extends EndpointAbstract {
 
   public function getCustomFields() {
     $index = $this->index();
-    if (isset($index[0]['id'])) {
-      $firstId = $index[0]['id'];
+    if (isset($index['results'][0]['id'])) {
+      $firstId = $index['results'][0]['id'];
       $firstPerson = $this->show($firstId);
       $existingFieldNames = array_keys($firstPerson['person']);
       array_walk($existingFieldNames, function (& $value) {$value = '/' . $value;});
