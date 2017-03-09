@@ -151,6 +151,7 @@ class People extends EndpointAbstract {
       '/marital_status' => [Validator::STRING, 'the person’s marital status'],
       '/media_market_name' => [Validator::STRING, 'the name of this person’s media market'],
       '/meetup_address' => [Validator::ADDRESS, 'an address resource based on this person’s profile in Meetup'],
+      '/meetup_id' => [Validator::STRING, 'this person’s ID from Meetup'],
       '/membership_expires_at' => [Validator::ISO_TIMESTAMP, 'the time and date that this user’s membership expires'],
       '/membership_level_name' => [Validator::STRING, 'the name of the level of this person’s membership'],
       '/membership_started_at' => [Validator::ISO_TIMESTAMP, 'the time and date that this user started a membership'],
