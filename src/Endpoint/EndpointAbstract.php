@@ -18,24 +18,26 @@ abstract class EndpointAbstract {
     }
 
     protected function apiGet($urlPath, array $allowedQueryParameters = [], array $queryParameters = []) {
-        return $this->apiCall('GET', $urlPath, [], [], $allowedQueryParameters, $queryParameters);
+        return $this->apiCall('GET', $urlPath, [], null, $allowedQueryParameters, $queryParameters);
     }
 
-    protected function apiPut($urlPath, array $allowedBodyParameters = [], array $bodyParameters = [], array $allowedQueryParameters = [], array $queryParameters = []) {
+    protected function apiPut($urlPath, array $allowedBodyParameters = [], array $bodyParameters = null, array $allowedQueryParameters = [], array $queryParameters = []) {
         return $this->apiCall('PUT', $urlPath, $allowedBodyParameters, $bodyParameters, $allowedQueryParameters, $queryParameters);
     }
 
-    protected function apiPost($urlPath, array $allowedBodyParameters = [], array $bodyParameters = [], array $allowedQueryParameters = [], array $queryParameters = []) {
+    protected function apiPost($urlPath, array $allowedBodyParameters = [], array $bodyParameters = null, array $allowedQueryParameters = [], array $queryParameters = []) {
         return $this->apiCall('POST', $urlPath, $allowedBodyParameters, $bodyParameters, $allowedQueryParameters, $queryParameters);
     }
 
-    protected function apiDelete($urlPath, array $allowedBodyParameters = [], array $bodyParameters = [], array $allowedQueryParameters = [], array $queryParameters = []) {
+    protected function apiDelete($urlPath, array $allowedBodyParameters = [], array $bodyParameters = null, array $allowedQueryParameters = [], array $queryParameters = []) {
         return $this->apiCall('DELETE', $urlPath, $allowedBodyParameters, $bodyParameters, $allowedQueryParameters, $queryParameters);
     }
 
-    protected function apiCall($method, $urlPath, array $allowedBodyParameters = [], array $bodyParameters = [], array $allowedQueryParameters = [], array $queryParameters = []) {
-        $bodyParameters = Validator::normalize($bodyParameters, $allowedBodyParameters);
-        $bodyParameters = Validator::inlineJsonPointer($bodyParameters);
+    protected function apiCall($method, $urlPath, array $allowedBodyParameters = [], array $bodyParameters = null, array $allowedQueryParameters = [], array $queryParameters = []) {
+        if (! is_null($bodyParameters)) {
+            $bodyParameters = Validator::normalize($bodyParameters, $allowedBodyParameters);
+            $bodyParameters = Validator::inlineJsonPointer($bodyParameters);
+        }
 
         $queryParameters = Validator::normalize($queryParameters, $allowedQueryParameters);
         $queryParameters = Validator::inlineJsonPointer($queryParameters);
@@ -61,6 +63,7 @@ abstract class EndpointAbstract {
             (
                 isset($response['body']['code'], $response['body']['message'])
                 &&
+                // DO NOT add "no_matches". The people/match method does return that error. Instead it just should return an empty set.
                 (1 === preg_match('{error|not_found|bad_request|not_acceptable}i', $response['body']['code']))
             )
         ) {
@@ -88,6 +91,13 @@ abstract class EndpointAbstract {
             //     "parameters": [
             //         "person"
             //     ]
+            // }
+            //
+            // The following is really NOT AN ERROR:
+            // 400
+            // {
+            //     "code": "no_matches",
+            //     "message": "No people matched the given criteria.",
             // }
             //
             // 404
