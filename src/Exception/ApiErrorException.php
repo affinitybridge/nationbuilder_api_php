@@ -2,8 +2,8 @@
 
 namespace Affinitybridge\NationBuilder\Exception;
 
-class ApiErrorException extends \RuntimeException {
-    protected $response = null;
+class ApiErrorException extends CommonException {
+    protected $messagePrefix = 'NationBuilder API returned an error for ';
 
     public static function isError($response) {
         return (
@@ -15,47 +15,9 @@ class ApiErrorException extends \RuntimeException {
                 // DO NOT add "no_matches". The "people/match" method does return
                 // that, but it's not really an error. Instead it just should
                 // return an empty set.
-                (1 === preg_match('{error|not_found|bad_request|not_acceptable}i', $response['body']['code']))
+                (1 === preg_match('{error|not_found|bad_request|missing_parameters|not_acceptable}i', $response['body']['code']))
             )
         );
-    }
-
-    public function __construct($httpMethod, $restMethodPath, $response = null, $previous = null) {
-        $code = $this->getCodeFromResponse($response);
-        $message = $this->makeMessage($httpMethod, $restMethodPath, $response);
-        parent::__construct($message, $code, $previous);
-        $this->response = $response;
-    }
-
-    protected function getCodeFromResponse($response = null) {
-        if (is_callable([$response, 'getStatusCode'])) {
-            return $response->getStatusCode();
-        }
-        if (isset($response['statusCode'])) {
-            return $response['statusCode'];
-        }
-        return 0;
-    }
-
-    protected function makeMessage($httpMethod, $restMethodPath, $response = null) {
-        $httpMethod = (string) $httpMethod;
-        $restMethodPath = (string) $restMethodPath;
-        $code = $this->getCodeFromResponse($response);
-
-        $details = '';
-        if (isset($response['body']['code'])) {
-            $details .= ' (' . $response['body']['code'] . ')';
-        }
-        if (isset($response['body']['message'])) {
-            $details .= ' ' . $response['body']['message'];
-        }
-
-        if ('' == $details) {
-            $details = ' <pre>' . PHP_EOL . var_export($response, true) . PHP_EOL . '</pre>';
-        }
-
-        $message = 'NationBuilder API returned an error for ' . $httpMethod . ' /' . $restMethodPath . '/: ' . $code . $details;
-        return $message;
     }
 
     // A collection of errors encountered so far:
