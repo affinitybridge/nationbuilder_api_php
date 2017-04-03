@@ -522,12 +522,15 @@ class People extends EndpointAbstract {
         throw new ApiErrorException('PUT', 'people/' . (int) $id . '/taggings', $response);
     }
 
+    $new_tags_count = count($tags);
+    $response_body_property = (1 == $new_tags_count) ? 'tagging' : 'taggings';
+
     if (
-        isset($response['body']['taggings'])
+        isset($response['body'][$response_body_property])
         &&
-        is_array($response['body']['taggings'])
+        is_array($response['body'][$response_body_property])
     ) {
-        return $response['body']['taggings'];
+        return $response['body'][$response_body_property];
     }
 
     throw new UnexpectedResponseStructureException('PUT', 'people/' . (int) $id . '/taggings', $response);
