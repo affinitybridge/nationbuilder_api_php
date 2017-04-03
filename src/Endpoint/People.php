@@ -3,6 +3,8 @@
 namespace Affinitybridge\NationBuilder\Endpoint;
 
 use Affinitybridge\NationBuilder\Validator as Validator;
+use Affinitybridge\NationBuilder\Exception\ApiErrorException as ApiErrorException;
+use Affinitybridge\NationBuilder\Exception\UnexpectedResponseStructureException as UnexpectedResponseStructureException;
 
 // @see http://nationbuilder.com/people_api
 
@@ -294,7 +296,10 @@ class People extends EndpointAbstract {
 
   public function count() {
     $response = $this->apiGet('people/count');
-    $this->throwIfError($response);
+
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/count', $response);
+    }
 
     if (
         isset($response['body']['people_count'])
@@ -303,14 +308,16 @@ class People extends EndpointAbstract {
     ) {
         return $response['body']['people_count'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/count: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/count', $response);
   }
 
   public function index($pageLimit = 10) {
     $response = $this->apiGet('people', ['/limit' => [Validator::INT, 'maximum number of results to return']], ['limit' => $pageLimit]);
-    $this->throwIfError($response);
+
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people', $response);
+    }
 
     if (
         isset($response['body']['results'])
@@ -319,14 +326,16 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people', $response);
   }
 
   public function show($id) {
     $response = $this->apiGet('people/' . (int) $id);
-    $this->throwIfError($response);
+
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/' . (int) $id, $response);
+    }
 
     if (
         isset($response['body']['person'])
@@ -335,9 +344,8 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/' . $id . ': ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/' . (int) $id, $response);
   }
 
   public function match(array $params) {
@@ -366,7 +374,9 @@ class People extends EndpointAbstract {
         return [];
     }
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/match', $response);
+    }
 
     if (
         isset($response['body']['person'])
@@ -375,9 +385,8 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/match: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/match', $response);
   }
 
   public function search(array $params) {
@@ -410,7 +419,9 @@ class People extends EndpointAbstract {
       '/limit' => [Validator::INT, 'maximum number of results to return'],
     ], $params);
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/search', $response);
+    }
 
     if (
         isset($response['body']['results'])
@@ -419,9 +430,8 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/search: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/search', $response);
   }
 
   public function nearby(array $params) {
@@ -436,7 +446,9 @@ class People extends EndpointAbstract {
       '/limit' => [Validator::INT, 'maximum number of results to return'],
     ], $params);
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/nearby', $response);
+    }
 
     if (
         isset($response['body']['results'])
@@ -445,15 +457,16 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/nearby: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/nearby', $response);
   }
 
   public function me() {
     $response = $this->apiGet('people/me');
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/me', $response);
+    }
 
     if (
         isset($response['body']['person'])
@@ -462,15 +475,16 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/me: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/me', $response);
   }
 
   public function register($id) {
     $response = $this->apiGet('people/' . (int) $id . '/register');
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/' . (int) $id . '/register', $response);
+    }
 
     if (
         isset($response['body']['status'])
@@ -479,15 +493,16 @@ class People extends EndpointAbstract {
     ) {
         return 'success' == $response['body']['status'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/' . (int) $id . '/register: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/' . (int) $id . '/register', $response);
   }
 
   public function taggings($id) {
     $response = $this->apiGet('people/' . (int) $id . '/taggings');
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('GET', 'people/' . (int) $id . '/taggings', $response);
+    }
 
     if (
         isset($response['body']['taggings'])
@@ -496,15 +511,16 @@ class People extends EndpointAbstract {
     ) {
         return $response['body']['taggings'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for /people/' . (int) $id . '/taggings: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('GET', 'people/' . (int) $id . '/taggings', $response);
   }
 
   public function addTags($id, array $tags) {
     $response = $this->apiPut('people/' . (int) $id . '/taggings', ['/tagging/tag' => [Validator::ARRAY_OF_STRINGS, '']], ['tagging' => ['tag' => $tags]]);
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('PUT', 'people/' . (int) $id . '/taggings', $response);
+    }
 
     if (
         isset($response['body']['taggings'])
@@ -513,9 +529,8 @@ class People extends EndpointAbstract {
     ) {
         return $response['body']['taggings'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for PUT /people/' . (int) $id . '/taggings: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('PUT', 'people/' . (int) $id . '/taggings', $response);
   }
 
   public function deleteTag($id, $tag) {
@@ -524,7 +539,10 @@ class People extends EndpointAbstract {
         return true;
     }
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('DELETE', 'people/' . (int) $id . '/taggings/' . (string) $tag, $response);
+    }
+
     return false;
   }
 
@@ -534,7 +552,10 @@ class People extends EndpointAbstract {
         return true;
     }
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('DELETE', 'people/' . (int) $id . '/taggings', $response);
+    }
+
     return false;
   }
 
@@ -547,7 +568,10 @@ class People extends EndpointAbstract {
         // TODO Handle duplication conflict.
     }
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('POST', 'people', $response);
+    }
+
     if (
         (201 == $response['statusCode'])
         &&
@@ -557,9 +581,8 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for POST /people: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('POST', 'people', $response);
   }
 
   public function update($id, $person) {
@@ -567,7 +590,10 @@ class People extends EndpointAbstract {
     $person = Validator::inlineJsonPointer($person);
     $response = $this->apiPut('people/' . (int) $id, ['/person' => [Validator::ABBR_PERSON, '']], ['person' => $person]);
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('PUT', 'people/' . (int) $id, $response);
+    }
+
     if (
         isset($response['body']['person'])
         &&
@@ -575,9 +601,8 @@ class People extends EndpointAbstract {
     ) {
         return $response['body'];
     }
-    else {
-        throw new \Exception('NationBuilder API did not return results for POST /people' . (int) $id . ': ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-    }
+
+    throw new UnexpectedResponseStructureException('PUT', 'people/' . (int) $id, $response);
   }
 
   public function delete($id) {
@@ -586,7 +611,10 @@ class People extends EndpointAbstract {
         return true;
     }
 
-    $this->throwIfError($response);
+    if (ApiErrorException::isError($response)) {
+        throw new ApiErrorException('DELETE', 'people/' . (int) $id, $response);
+    }
+
     return false;
   }
 

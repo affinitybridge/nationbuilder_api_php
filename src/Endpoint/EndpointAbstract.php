@@ -5,6 +5,8 @@ namespace Affinitybridge\NationBuilder\Endpoint;
 use Affinitybridge\NationBuilder\Container as Container;
 use Affinitybridge\NationBuilder\Connection\ConnectionInterface as ConnectionInterface;
 use Affinitybridge\NationBuilder\Validator as Validator;
+use Affinitybridge\NationBuilder\Exception\ApiErrorException as ApiErrorException;
+use Affinitybridge\NationBuilder\Exception\UnexpectedResponseStructureException as UnexpectedResponseStructureException;
 
 abstract class EndpointAbstract {
     protected $container = null;
@@ -54,70 +56,5 @@ abstract class EndpointAbstract {
         //     "x-ratelimit-reset": "1455578571"
         // }
         return $response;
-    }
-
-    public function throwIfError($response) {
-        if (
-            (400 <= $response['statusCode'])
-            ||
-            (
-                isset($response['body']['code'], $response['body']['message'])
-                &&
-                // DO NOT add "no_matches". The people/match method does return that error. Instead it just should return an empty set.
-                (1 === preg_match('{error|not_found|bad_request|not_acceptable}i', $response['body']['code']))
-            )
-        ) {
-            // examples:
-            //
-            // 400
-            // {
-            //     "code": "bad_request",
-            //     "message": "Bad Request."
-            // }
-            //
-            // 400
-            // {
-            //     "code": "missing_parameters",
-            //     "message": "Missing Parameters.",
-            //     "parameters": [
-            //         "location: lat, lng required"
-            //     ]
-            // }
-            //
-            // 400
-            // {
-            //     "code": "missing_parameters",
-            //     "message": "Missing Parameters.",
-            //     "parameters": [
-            //         "person"
-            //     ]
-            // }
-            //
-            // The following is really NOT AN ERROR:
-            // 400
-            // {
-            //     "code": "no_matches",
-            //     "message": "No people matched the given criteria.",
-            // }
-            //
-            // 404
-            // {
-            //     "code": "not_found",
-            //     "message": "Record not found"
-            // }
-            //
-            // 406
-            // {
-            //     "code": "not_acceptable",
-            //     "message": "I can only talk JSON. Please set 'Accept' and 'Content-Type' to 'application/json' in your http request header."
-            // }
-            //
-            // 500
-            // {
-            //     "code": "server_error",
-            //     "message": "You have encountered a server error."
-            // }
-            throw new \Exception('NationBuilder API returned an error: ' . $response['statusCode'] . ' (' . $response['body']['code'] . ') ' . $response['body']['message']);
-        }
     }
 }
