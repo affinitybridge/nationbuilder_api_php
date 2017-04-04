@@ -7,10 +7,10 @@ class CommonException extends \RuntimeException {
     protected $response = null;
 
     public function __construct($httpMethod, $restMethodPath, $response = null, $previous = null) {
+        $this->response = $response;
         $code = $this->getCodeFromResponse($response);
         $message = $this->makeMessage($httpMethod, $restMethodPath, $response);
         parent::__construct($message, $code, $previous);
-        $this->response = $response;
     }
 
     protected function getCodeFromResponse($response = null) {
@@ -23,24 +23,27 @@ class CommonException extends \RuntimeException {
         return 0;
     }
 
+    public function getAdditionalDetailsHtml() {
+        if (
+            isset($this->response['body'])
+            &&
+            is_array($this->response['body'])
+            &&
+            (0 == count(array_diff(array_keys($this->response['body']), ['code', 'message'])))
+        ) {
+            return '<p>(' . $this->response['body']['code'] . ') ' . $this->response['body']['message'] . '</p>';
+        }
+        else {
+            return '<pre>' . PHP_EOL . var_export($this->response, true) . PHP_EOL . '</pre>';
+        }
+    }
+
     protected function makeMessage($httpMethod, $restMethodPath, $response = null) {
         $httpMethod = (string) $httpMethod;
         $restMethodPath = (string) $restMethodPath;
         $code = $this->getCodeFromResponse($response);
 
-        $details = '';
-        if (isset($response['body']['code'])) {
-            $details .= ' (' . $response['body']['code'] . ')';
-        }
-        if (isset($response['body']['message'])) {
-            $details .= ' ' . $response['body']['message'];
-        }
-
-        if ('' == $details) {
-            $details = ' <pre>' . PHP_EOL . var_export($response, true) . PHP_EOL . '</pre>';
-        }
-
-        $message = $this->messagePrefix . $httpMethod . ' /' . $restMethodPath . '/: ' . $code . $details;
+        $message = $this->messagePrefix . $httpMethod . ' /' . $restMethodPath . '/: ' . $code;
         return $message;
     }
 }
