@@ -293,13 +293,29 @@ class PeopleTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testCreate
      */
-    public function testAddTags($createdId)
+    public function testAddSingleTag($createdId)
     {
-        $additionalTags = [
+        $additionalTag = [
+            static::TEST_TAG . '_added_single_tag',
+        ];
+        $result = $this->people->addTags($createdId, $additionalTag);
+
+        $this->customAssertHasOnlyTheseTags($createdId, array_merge([static::TEST_TAG], $additionalTag));
+
+        return $additionalTag;
+    }
+
+    /**
+     * @depends testCreate
+     * @depends testAddSingleTag
+     */
+    public function testAddTags($createdId, $additionalTag)
+    {
+        $additionalTags = array_merge($additionalTag, [
             static::TEST_TAG . '_added_1',
             static::TEST_TAG . '_added_2',
             static::TEST_TAG . '_added_3',
-        ];
+        ]);
         $result = $this->people->addTags($createdId, $additionalTags);
 
         $this->customAssertHasOnlyTheseTags($createdId, array_merge([static::TEST_TAG], $additionalTags));
