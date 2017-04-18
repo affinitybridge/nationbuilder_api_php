@@ -27,7 +27,7 @@ class CommonException extends \RuntimeException {
         if (
             isset($this->response['body']['code'], $this->response['body']['message'])
             &&
-            (2 == count($this->response['body']))
+            (2 == count($this->response['body'])) // Only use simple reporting if no additional info is present.
         ) {
             return '<p>(' . $this->response['body']['code'] . ') ' . $this->response['body']['message'] . '</p>';
         }
