@@ -25,11 +25,9 @@ class CommonException extends \RuntimeException {
 
     public function getAdditionalDetailsHtml() {
         if (
-            isset($this->response['body'])
+            isset($this->response['body']['code'], $this->response['body']['message'])
             &&
-            is_array($this->response['body'])
-            &&
-            (0 == count(array_diff(array_keys($this->response['body']), ['code', 'message'])))
+            (2 == count($this->response['body']))
         ) {
             return '<p>(' . $this->response['body']['code'] . ') ' . $this->response['body']['message'] . '</p>';
         }
