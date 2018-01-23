@@ -26,4 +26,9 @@ class Api
         $credentials = $this->container->environment->credentialsLoad($connectionId);
         return $this->container->connection($credentials['api_base_url'], $credentials['access_token']);
     }
+
+    public function getAPIEnvironment()
+    {
+        return $this->container->environment;
+    }
 }
