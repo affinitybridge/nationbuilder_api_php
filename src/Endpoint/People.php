@@ -39,7 +39,7 @@ class People extends EndpointAbstract {
       '/author_id' => [Validator::INT, 'the resource ID of the person who created this person in the nation'],
       '/author' => [Validator::ABBR_PERSON, 'an abbreviated person resource representing the person who created this person’s record'],
       '/auto_import_id' => [Validator::INT, 'the ID given to a signup when a person is auto imported'],
-      '/availability' => [Validator::ISO_TIMESTAMP, 'date and time this person is available (such as for volunteer shifts)'],
+      '/availability' => [Validator::STRING, 'date and time this person is available (such as for volunteer shifts)'],
       '/ballots' => [Validator::STRING, 'undocumented field'],
       '/banned_at' => [Validator::ISO_TIMESTAMP, 'the time and date this person was banned'],
       '/billing_address' => [Validator::ADDRESS, 'an address resource representing this person’s billing address'],
